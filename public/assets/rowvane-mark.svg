@@ -1,0 +1,98 @@
+
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 512 420"
+     width="512" height="420">
+
+  <defs>
+    <linearGradient id="upperLeft" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F0C9FF"/>
+      <stop offset=".55" stop-color="#B77CF5"/>
+      <stop offset="1" stop-color="#8252DF"/>
+    </linearGradient>
+
+    <linearGradient id="upperRight" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F3D5FF"/>
+      <stop offset=".55" stop-color="#B98AF4"/>
+      <stop offset="1" stop-color="#8050D8"/>
+    </linearGradient>
+
+    <linearGradient id="lowerLeft" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#20E6D4"/>
+      <stop offset=".65" stop-color="#49CFCB"/>
+      <stop offset="1" stop-color="#8871DC"/>
+    </linearGradient>
+
+    <linearGradient id="lowerRight" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#27D9D0"/>
+      <stop offset=".65" stop-color="#50C9D4"/>
+      <stop offset="1" stop-color="#8C70DF"/>
+    </linearGradient>
+
+    <filter id="wingGlow" x="-30%" y="-30%"
+            width="160%" height="170%">
+      <feGaussianBlur in="SourceAlpha"
+                      stdDeviation="8" result="blur"/>
+      <feOffset in="blur" dx="0" dy="5" result="offset"/>
+      <feComponentTransfer in="offset" result="shadow">
+        <feFuncA type="linear" slope=".22"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode in="shadow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g filter="url(#wingGlow)">
+
+    <!-- Upper left wing -->
+    <path
+      d="M256 205
+         C210 143 128 67 82 77
+         C55 84 76 177 113 222
+         C149 263 206 267 256 255
+         C276 239 276 222 256 205Z"
+      fill="url(#upperLeft)"/>
+
+    <!-- Upper right wing -->
+    <path
+      d="M256 205
+         C302 143 384 67 430 77
+         C457 84 436 177 399 222
+         C363 263 306 267 256 255
+         C236 239 236 222 256 205Z"
+      fill="url(#upperRight)"/>
+
+    <!-- Lower left wing -->
+    <path
+      d="M256 245
+         C192 244 124 275 112 340
+         C107 374 124 375 150 359
+         C199 329 238 285 256 245Z"
+      fill="url(#lowerLeft)"/>
+
+    <!-- Lower right wing -->
+    <path
+      d="M256 245
+         C320 244 388 275 400 340
+         C405 374 388 375 362 359
+         C313 329 274 285 256 245Z"
+      fill="url(#lowerRight)"/>
+
+    <!-- Inner shaded surfaces of upper wings -->
+    <path
+      d="M256 205
+         C220 190 161 154 112 163
+         C126 213 174 249 256 255
+         C276 239 276 222 256 205Z"
+      fill="#5941B9" opacity=".48"/>
+
+    <path
+      d="M256 205
+         C292 190 351 154 400 163
+         C386 213 338 249 256 255
+         C236 239 236 222 256 205Z"
+      fill="#5941B9" opacity=".48"/>
+
+  </g>
+</svg>

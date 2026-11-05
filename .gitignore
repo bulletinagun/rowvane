@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Environment and Credentials
+.env
+.env.*
+!.env.example
+
+# OS and Editor Artifacts
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Coverage and Build Output
+coverage/
+dist/
+
+# Temporary Backups and Database Dumps
+*.dump
+*_backup.sql
+.tmp_backups/

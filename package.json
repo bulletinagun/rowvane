@@ -1,0 +1,25 @@
+{
+  "name": "rowvane",
+  "version": "1.0.0",
+  "description": "A visual PostgreSQL workspace combining spreadsheet-style browsing, SQL execution, and CSV import/export.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env index.js",
+    "dev": "node --watch --env-file-if-exists=.env index.js",
+    "seed": "node --env-file-if-exists=.env src/db/seed.js",
+    "seed:playground": "node --env-file-if-exists=.env src/db/seedPlaygroundCli.js",
+    "test": "node --env-file-if-exists=.env test_m4_verification.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=22.9.0"
+  },
+  "dependencies": {
+    "express": "^5.3.0",
+    "papaparse": "^5.7.0",
+    "pg": "^8.23.1"
+  }
+}

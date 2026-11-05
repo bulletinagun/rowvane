@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Rowvane — A visual PostgreSQL workspace combining spreadsheet-style browsing, SQL execution, and CSV import/export." />
+  <title>Rowvane — A Visual SQL Workspace</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/rowvane-mark.svg" />
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <div class="app-shell" id="appShell">
+    <!-- Top Workspace Toolbar -->
+    <header class="top-toolbar" role="banner">
+      <div class="toolbar-left">
+        <button
+          type="button"
+          class="icon-btn"
+          id="sidebarToggleBtn"
+          title="Toggle Sidebar (⌘B)"
+          aria-label="Toggle tables sidebar"
+          aria-expanded="true"
+        >
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <rect x="1.5" y="2.5" width="13" height="11" rx="2" stroke="currentColor" stroke-width="1.3" />
+            <line x1="5.5" y1="2.5" x2="5.5" y2="13.5" stroke="currentColor" stroke-width="1.3" />
+          </svg>
+        </button>
+
+        <div class="brand-lockup">
+          <span class="brand-glyph" aria-hidden="true">
+            <img src="/assets/rowvane-mark.svg" alt="" width="18" height="15" style="display: block; object-fit: contain;" />
+          </span>
+          <span class="brand-title">Rowvane</span>
+        </div>
+        <div class="context-breadcrumb" id="contextBreadcrumb" title="Active Database &amp; Table Context">
+          <span class="context-crumb context-db" id="contextDbName">rowvane</span>
+          <span class="context-sep" aria-hidden="true">/</span>
+          <span class="context-crumb context-schema" id="contextSchemaName">public</span>
+          <span class="context-sep" aria-hidden="true">/</span>
+          <span class="context-crumb context-table" id="activeTableName">—</span>
+        </div>
+      </div>
+
+      <div class="toolbar-center">
+        <!-- Main Workspace View Navigation -->
+        <div class="view-segmented-nav" id="viewNavTabs" role="tablist" aria-label="Workspace Views">
+          <div class="view-nav-indicator" id="viewNavIndicator" aria-hidden="true"></div>
+          <button type="button" class="view-nav-tab active" id="viewNavGrid" data-view="grid" role="tab" aria-selected="true">
+            Data Grid
+          </button>
+          <button type="button" class="view-nav-tab" id="viewNavExplorer" data-view="explorer" role="tab" aria-selected="false">
+            Structure Explorer
+          </button>
+          <button type="button" class="view-nav-tab hidden" id="viewNavPlayground" data-view="playground" role="tab" aria-selected="false">
+            Demos &amp; Chaos
+          </button>
+        </div>
+      </div>
+
+      <div class="toolbar-right">
+        <!-- Live PostgreSQL Connection Status -->
+        <div class="db-status-pill" id="dbStatusPill" title="PostgreSQL Connection Status">
+          <span class="status-dot status-connecting" id="dbStatusDot" aria-hidden="true"></span>
+          <span class="status-label" id="dbStatusText">Connecting…</span>
+        </div>
+
+        <!-- Application-Wide Tools & Connection Management -->
+        <button
+          type="button"
+          class="toolbar-btn connect-db-btn"
+          id="connectDbTriggerBtn"
+          title="Connect to your own local or remote PostgreSQL instance"
+        >
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M3 8h10M8 3v10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+          <span>Connect DB</span>
+        </button>
+
+        <button
+          type="button"
+          class="toolbar-btn"
+          id="backupRestoreTriggerBtn"
+          title="Native PostgreSQL Backup &amp; Restore (pg_dump, pg_restore, psql)"
+        >
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M2.5 4.5A2 2 0 0 1 4.5 2.5h7a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2v-7Z" stroke="currentColor" stroke-width="1.25"/>
+            <path d="M5.5 8h5M8 5.5v5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
+          </svg>
+          <span>Backup / Restore</span>
+        </button>
+
+        <div class="toolbar-divider" aria-hidden="true"></div>
+
+        <button
+          type="button"
+          class="icon-btn settings-trigger-btn"
+          id="settingsToggleBtn"
+          title="Settings (⌘,)"
+          aria-label="Settings"
+          aria-expanded="false"
+          aria-controls="customizationDrawer"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <g transform="scale(0.046875)" fill="currentColor" stroke="none">
+              <path d="M494.701,212.481l-28.245-5.44c-26.524-5.091-38.686-36.072-22.715-57.848l17.728-24.17 c6.228-8.491,5.329-20.256-2.117-27.702l-38.293-38.293c-7.233-7.233-18.581-8.314-27.05-2.577l-23.808,16.128 c-22.352,15.131-52.859,1.819-56.978-24.867L308.682,18.1C307.085,7.688,298.128,0,287.595,0h-54.165 c-10.232,0-19.022,7.264-20.951,17.312l-6.997,36.459c-4.995,25.931-34.876,38.311-56.751,23.498l-30.74-20.82 c-8.468-5.736-19.816-4.654-27.048,2.578L52.648,97.32c-7.446,7.446-8.345,19.211-2.117,27.702l17.728,24.171 c15.971,21.776,3.809,52.756-22.702,57.845l-28.258,5.442C7.257,214.415,0,223.203,0,233.429v54.144 c0,10.528,7.68,19.482,18.085,21.085l29.632,4.565c26.699,4.105,40.01,34.618,24.862,56.976L56.45,394.009 c-5.737,8.468-4.655,19.817,2.577,27.05l38.293,38.293c7.446,7.446,19.211,8.345,27.702,2.117l24.171-17.728 c21.776-15.971,52.764-3.809,57.869,22.712l5.416,28.233C214.406,504.735,223.197,512,233.429,512h54.165 c10.532,0,19.488-7.686,21.086-18.096l3.2-20.843c4.199-27.285,35.833-40.394,58.097-24.07l16.993,12.473 c8.491,6.233,20.26,5.335,27.708-2.113l38.293-38.293c7.233-7.233,8.314-18.581,2.577-27.05l-16.128-23.808 c-15.149-22.359-1.838-52.872,24.855-56.976l29.638-4.566C504.32,307.055,512,298.101,512,287.573v-54.144 C512,223.203,504.743,214.415,494.701,212.481z M469.333,269.275l-11.547,1.779c-57.654,8.865-86.411,74.78-53.688,123.077 l6.244,9.217l-12.886,12.886l-2.242-1.646c-48.101-35.266-116.436-6.949-125.506,51.99l-0.423,2.754h-18.228l-2.097-10.931 c-11.027-57.294-77.962-83.566-125.003-49.066l-9.412,6.903l-12.89-12.89l6.245-9.219 c32.722-48.296,3.966-114.211-53.695-123.077l-11.541-1.778v-18.229l10.947-2.108c57.275-10.994,83.553-77.935,49.051-124.978 l-6.903-9.412l12.891-12.891l16.152,10.94c47.243,31.991,111.785,5.253,122.576-50.77l3.677-19.16h18.226l1.768,11.532 c8.899,57.651,74.781,86.398,123.072,53.707l9.225-6.249l12.89,12.89l-6.903,9.411c-34.503,47.044-8.225,113.984,49.063,124.981 l10.934,2.106V269.275z" />
+              <path d="M256,149.327c-58.907,0-106.667,47.759-106.667,106.667S197.093,362.66,256,362.66s106.667-47.759,106.667-106.667 S314.907,149.327,256,149.327z M256,319.994c-35.343,0-64-28.657-64-64s28.657-64,64-64s64,28.657,64,64 S291.343,319.994,256,319.994z" />
+            </g>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace Body -->
+    <div class="workspace-body" id="workspaceBody">
+      <!-- Left Sidebar -->
+      <aside class="sidebar" id="sidebar" aria-label="Database Tables">
+        <div class="sidebar-section-header">
+          <div class="sidebar-drag-handle" id="sidebarDragHandle" title="Drag to reposition floating panel (Double-click to reset position)" aria-label="Drag to reposition panel">
+            <svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor" aria-hidden="true">
+              <circle cx="2" cy="2" r="1.1"/>
+              <circle cx="6" cy="2" r="1.1"/>
+              <circle cx="2" cy="6" r="1.1"/>
+              <circle cx="6" cy="6" r="1.1"/>
+              <circle cx="2" cy="10" r="1.1"/>
+              <circle cx="6" cy="10" r="1.1"/>
+            </svg>
+          </div>
+          <div class="sidebar-header-left">
+            <span class="sidebar-section-title">TABLES</span>
+            <span class="sidebar-count-badge" id="tableCountBadge">0</span>
+          </div>
+          <div class="panel-header-controls">
+            <button type="button" class="panel-ctrl-btn" id="sidebarLockBtn" title="Lock panel position and movement" aria-label="Lock sidebar position">
+              <svg class="lock-icon" width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <rect x="3" y="7" width="10" height="7.5" rx="1.5" stroke="currentColor" stroke-width="1.3" />
+                <path d="M5.5 7V4.5a2.5 2.5 0 0 1 5 0V7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
+              </svg>
+            </button>
+            <button type="button" class="panel-ctrl-btn" id="sidebarGlassBtn" title="Toggle Glass Material (Standard / Glass)" aria-label="Toggle sidebar glass material">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M2.5 4.5A2 2 0 0 1 4.5 2.5h7a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2v-7Z" stroke="currentColor" stroke-width="1.25" stroke-dasharray="2.5 2"/>
+                <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.2"/>
+              </svg>
+            </button>
+            <button type="button" class="panel-ctrl-btn" id="sidebarDockBtn" title="Toggle Docked / Floating mode" aria-label="Toggle sidebar floating mode">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <rect x="2.5" y="2.5" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.3" />
+                <rect x="5.5" y="5.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <nav class="table-list-container" aria-label="Public Schema Tables">
+          <ul class="table-list" id="tableList" role="listbox">
+            <!-- Populated dynamically from GET /api/tables -->
+          </ul>
+        </nav>
+
+        <!-- Central Import Entry Point Card -->
+        <div class="sidebar-footer">
+          <div
+            class="csv-drop-entry"
+            id="sidebarCsvDropBtn"
+            role="button"
+            tabindex="0"
+            title="Import CSV into PostgreSQL Database"
+          >
+            <div class="csv-drop-icon" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+                <path d="M8 10.5V2.5M8 2.5L5 5.5M8 2.5L11 5.5M2.5 10.5v2a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-2" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+            <div class="csv-drop-copy">
+              <div class="csv-drop-top-row">
+                <span class="csv-drop-heading">Import</span>
+                <span class="csv-drop-format-tag">.csv</span>
+              </div>
+              <span class="csv-drop-title">Drop files here or click to browse</span>
+              <span class="csv-drop-desc">Import data into your database.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Floating Panel 8-Direction Resizer Handles -->
+        <div class="floating-resizer-handle floating-resizer-e" data-dir="e" aria-hidden="true"></div>
+        <div class="floating-resizer-handle floating-resizer-s" data-dir="s" aria-hidden="true"></div>
+        <div class="floating-resizer-handle floating-resizer-w" data-dir="w" aria-hidden="true"></div>
+        <div class="floating-resizer-handle floating-resizer-n" data-dir="n" aria-hidden="true"></div>
+        <div class="floating-resizer-handle floating-resizer-se" data-dir="se" aria-hidden="true" title="Resize floating sidebar (Double-click to reset size)"></div>
+        <div class="floating-resizer-handle floating-resizer-sw" data-dir="sw" aria-hidden="true"></div>
+        <div class="floating-resizer-handle floating-resizer-ne" data-dir="ne" aria-hidden="true"></div>
+        <div class="floating-resizer-handle floating-resizer-nw" data-dir="nw" aria-hidden="true"></div>
+      </aside>
+
+      <!-- Vertical Draggable Splitter for Sidebar -->
+      <div
+        class="sidebar-resizer"
+        id="sidebarResizer"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize Tables Sidebar"
+        tabindex="0"
+      >
+        <div class="sidebar-resizer-grip" aria-hidden="true"></div>
+      </div>
+
+      <!-- Right Split Pane: Top Spreadsheet Grid + Resizable Bottom SQL Panel -->
+      <main class="workspace-main" id="workspaceMain">
+        <!-- Top Pane: Spreadsheet Data Grid -->
+        <section class="grid-pane" id="gridPane" aria-label="Data Grid">
+          <!-- Table Workspace Dedicated Action Toolbar -->
+          <div class="table-workspace-toolbar" id="tableWorkspaceToolbar" role="toolbar" aria-label="Table Editing Actions">
+            <div class="table-toolbar-left">
+              <button
+                type="button"
+                class="toolbar-btn table-action-btn"
+                id="insertRowBtn"
+                title="Insert a new row into the active table"
+              >
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                </svg>
+                <span>Add Row</span>
+              </button>
+
+              <button
+                type="button"
+                class="toolbar-btn toolbar-btn-danger table-action-btn"
+                id="deleteRowBtn"
+                title="Delete the currently selected row"
+                disabled
+              >
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M3 4.5h10M6 4.5V3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1.5M12.5 4.5l-.8 9a1.5 1.5 0 0 1-1.5 1.4H5.8a1.5 1.5 0 0 1-1.5-1.4l-.8-9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                </svg>
+                <span>Delete Row</span>
+              </button>
+
+              <button
+                type="button"
+                class="toolbar-btn table-action-btn"
+                id="refreshTableBtn"
+                title="Reload current table rows"
+              >
+                <svg class="refresh-icon" width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M13.5 8A5.5 5.5 0 1 1 11.88 4.11M13.5 2.5v3h-3" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span>Refresh</span>
+              </button>
+
+              <div class="table-toolbar-divider" aria-hidden="true"></div>
+
+              <button
+                type="button"
+                class="toolbar-btn table-action-btn undo-btn"
+                id="gridUndoBtn"
+                title="Undo database edit (⌘Z / Ctrl+Z)"
+                disabled
+              >
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M3.5 6.5h7a3.5 3.5 0 0 1 0 7H9M3.5 6.5l3-3M3.5 6.5l3 3" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Undo</span>
+              </button>
+
+              <button
+                type="button"
+                class="toolbar-btn table-action-btn redo-btn"
+                id="gridRedoBtn"
+                title="Redo reverted database edit (⌘⇧Z / Ctrl+Y)"
+                disabled
+              >
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M12.5 6.5h-7a3.5 3.5 0 0 0 0 7H7M12.5 6.5l-3-3M12.5 6.5l-3 3" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Redo</span>
+              </button>
+
+              <div class="table-toolbar-divider" aria-hidden="true"></div>
+
+              <button
+                type="button"
+                class="toolbar-btn table-action-btn"
+                id="exportCsvToolbarBtn"
+                title="Export all rows of currently active table to CSV"
+              >
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M8 2.5v8M8 10.5l-3-3M8 10.5l3-3M2.5 11.5v1a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-1" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span>Export CSV</span>
+              </button>
+            </div>
+
+            <div class="table-toolbar-right">
+              <span class="cell-inspector-pill" id="cellInspectorPill">No cell selected</span>
+            </div>
+          </div>
+
+          <!-- Table metadata bar -->
+          <div class="grid-meta-bar" id="gridMetaBar">
+            <div class="grid-meta-left">
+              <span class="meta-item" id="gridRowSummary">Loading table…</span>
+              <span class="meta-dot" aria-hidden="true">·</span>
+              <span class="meta-item" id="gridColSummary">—</span>
+              <span class="meta-dot" aria-hidden="true">·</span>
+              <span class="meta-item" id="gridTimingSummary">—</span>
+              <span class="meta-dot" aria-hidden="true">·</span>
+              <span class="meta-item" id="gridSortSummary">Sorted by PK</span>
+
+              <span class="grid-sync-pill hidden" id="gridSyncPill" aria-live="polite">
+                <span class="sync-spinner" aria-hidden="true"></span>
+                <span id="gridSyncText">Updating…</span>
+              </span>
+
+              <span class="grid-stale-pill hidden" id="gridStalePill" role="status" aria-live="polite" title="Data may be stale. Recent refresh failed.">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="stale-icon" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span id="gridStaleText">Stale data</span>
+                <button type="button" class="stale-retry-btn" id="gridStaleRetryBtn" title="Retry table refresh">Retry</button>
+              </span>
+            </div>
+          </div>
+
+          <!-- Grid Viewport -->
+          <div class="grid-viewport" id="gridViewport" tabindex="0" role="region" aria-label="Table rows">
+            <div class="grid-state-overlay" id="gridLoadingState">
+              <div class="spinner" aria-hidden="true"></div>
+              <p class="state-title">Loading rows from PostgreSQL…</p>
+            </div>
+
+            <div class="grid-state-overlay hidden" id="gridErrorState" role="alert">
+              <div class="state-icon state-icon-error" aria-hidden="true">!</div>
+              <p class="state-title" id="gridErrorTitle">Failed to load data</p>
+              <p class="state-subtitle" id="gridErrorMessage"></p>
+              <button type="button" class="toolbar-btn" id="gridRetryBtn">Retry</button>
+            </div>
+
+            <!-- Empty State -->
+            <div class="grid-state-overlay hidden" id="gridEmptyState">
+              <p class="state-title" id="gridEmptyTitle">No rows in this table</p>
+              <p class="state-subtitle">Select another table or import a CSV dataset.</p>
+            </div>
+
+            <!-- Spreadsheet Table -->
+            <table class="sheet-grid hidden" id="sheetGrid" role="grid">
+              <thead id="sheetGridHead"></thead>
+              <tbody id="sheetGridBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Structure Explorer View -->
+        <section class="grid-pane explorer-pane hidden" id="explorerPane" aria-label="Database Structure Explorer">
+          <div class="explorer-toolbar">
+            <div class="explorer-toolbar-left">
+              <span class="explorer-title">Structure Explorer</span>
+              <div class="search-input-wrap">
+                <input type="text" id="explorerSearchInput" class="explorer-search" placeholder="Filter tables &amp; views…" />
+                <button type="button" class="search-clear-btn hidden" id="explorerSearchClearBtn" aria-label="Clear filter" title="Clear filter">
+                  <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                    <path d="M3 3l10 10M13 3L3 13" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="explorer-toolbar-right">
+              <button type="button" class="toolbar-btn" id="explorerRefreshBtn" title="Reload structure catalog">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+                  <path d="M13.5 8A5.5 5.5 0 1 1 11.88 4.11M13.5 2.5v3h-3" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Refresh Schema</span>
+              </button>
+            </div>
+          </div>
+          <div class="explorer-body">
+            <div class="explorer-sidebar" id="explorerTablesList"></div>
+            <div class="explorer-content">
+              <div id="explorerTableDetail"></div>
+              <div class="explorer-card global-rel-card">
+                <div class="card-section-head">
+                  <div class="sec-title-group">
+                    <h3 class="card-sec-title">Global Schema Relationships</h3>
+                    <span class="sec-count-badge" id="globalRelsCountBadge">All Constraints</span>
+                  </div>
+                </div>
+                <div class="card-section-body">
+                  <div id="explorerRelationshipsList"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Playground & Chaos Mode View -->
+        <section class="grid-pane playground-pane hidden" id="playgroundPane" aria-label="Interactive Playground">
+          <div class="pg-banner" id="playgroundStatusBanner"></div>
+          <nav class="pg-nav-bar" id="playgroundNavTabs" role="tablist"></nav>
+          <div class="pg-cards-grid" id="playgroundCardsGrid"></div>
+        </section>
+
+        <!-- Horizontal Draggable Splitter -->
+        <div
+          class="panel-resizer"
+          id="sqlPanelResizer"
+          role="separator"
+          aria-orientation="horizontal"
+          aria-label="Resize SQL Editor Panel"
+          tabindex="0"
+        >
+          <div class="resizer-grip" aria-hidden="true"></div>
+        </div>
+
+        <!-- Bottom Pane: Resizable SQL Editor & Results -->
+        <section class="sql-panel" id="sqlPanel" data-view="query" aria-label="SQL Notebook Editor">
+          <div class="sql-panel-header">
+            <div class="sql-panel-tabs" id="sqlPanelTabs" role="tablist" aria-label="SQL Editor Views">
+              <div class="sql-tab-indicator" id="sqlTabIndicator" aria-hidden="true"></div>
+              <button
+                type="button"
+                class="sql-tab active"
+                id="sqlTabQuery"
+                data-sql-view="query"
+                role="tab"
+                aria-selected="true"
+                title="Query Editor Only"
+              >
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M5 4L1.5 8 5 12M11 4l3.5 4-3.5 4M9.2 2.5l-2.4 11" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span>Query</span>
+              </button>
+
+              <button
+                type="button"
+                class="sql-tab"
+                id="sqlTabResults"
+                data-sql-view="results"
+                role="tab"
+                aria-selected="false"
+                title="Results Panel Only"
+              >
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3" />
+                  <path d="M2 6h12M6 6v8" stroke="currentColor" stroke-width="1.3" />
+                </svg>
+                <span>Results</span>
+                <span class="sql-results-badge hidden" id="sqlResultsBadge">0</span>
+              </button>
+
+              <button
+                type="button"
+                class="sql-tab"
+                id="sqlTabSplit"
+                data-sql-view="split"
+                role="tab"
+                aria-selected="false"
+                title="Split View (Editor + Results Side-by-Side)"
+              >
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <rect x="1.5" y="2.5" width="13" height="11" rx="2" stroke="currentColor" stroke-width="1.3" />
+                  <line x1="8" y1="2.5" x2="8" y2="13.5" stroke="currentColor" stroke-width="1.3" />
+                </svg>
+                <span>Split</span>
+              </button>
+
+              <button
+                type="button"
+                class="sql-tab"
+                id="sqlTabHistory"
+                title="View Recent SQL Query History"
+              >
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/>
+                  <path d="M8 5v3.5l2.2 1.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                </svg>
+                <span>History</span>
+              </button>
+            </div>
+
+            <div class="sql-panel-actions">
+              <span class="sql-status-text" id="sqlStatusText">
+                Ready · Press Run (⌘↵)
+              </span>
+              <div class="panel-header-controls">
+                <div class="sql-drag-handle" id="sqlDragHandle" title="Drag to reposition SQL panel" aria-label="Drag SQL panel">
+                  <svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor" aria-hidden="true">
+                    <circle cx="2" cy="2" r="1.1"/>
+                    <circle cx="6" cy="2" r="1.1"/>
+                    <circle cx="2" cy="6" r="1.1"/>
+                    <circle cx="6" cy="6" r="1.1"/>
+                    <circle cx="2" cy="10" r="1.1"/>
+                    <circle cx="6" cy="10" r="1.1"/>
+                  </svg>
+                </div>
+                <button type="button" class="panel-ctrl-btn" id="sqlLockBtn" title="Lock SQL panel position" aria-label="Lock SQL panel position">
+                  <svg class="lock-icon" width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <rect x="3" y="7" width="10" height="7.5" rx="1.5" stroke="currentColor" stroke-width="1.3" />
+                    <path d="M5.5 7V4.5a2.5 2.5 0 0 1 5 0V7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
+                  </svg>
+                </button>
+                <button type="button" class="panel-ctrl-btn" id="sqlGlassBtn" title="Toggle Glass Material (Standard / Glass)" aria-label="Toggle SQL panel glass material">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M2.5 4.5A2 2 0 0 1 4.5 2.5h7a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2v-7Z" stroke="currentColor" stroke-width="1.25" stroke-dasharray="2.5 2"/>
+                    <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.2"/>
+                  </svg>
+                </button>
+                <button type="button" class="panel-ctrl-btn" id="sqlDockBtn" title="Toggle Docked / Floating mode" aria-label="Toggle SQL editor floating mode">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <rect x="2.5" y="2.5" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.3" />
+                    <rect x="5.5" y="5.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3" />
+                  </svg>
+                </button>
+                <button type="button" class="panel-ctrl-btn" id="sqlPanelCollapseBtn" title="Collapse / Expand SQL Editor" aria-label="Collapse SQL Editor">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+              </div>
+              <button
+                type="button"
+                class="cancel-query-btn hidden"
+                id="cancelQueryBtn"
+                title="Cancel Executing SQL Query"
+              >
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                  <path d="M2 2l8 8M10 2L2 10" />
+                </svg>
+                <span>Cancel</span>
+              </button>
+              <button
+                type="button"
+                class="run-query-btn"
+                id="runQueryBtn"
+                title="Run SQL Query (⌘+Enter)"
+              >
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
+                  <path d="M2.5 1.8a.5.5 0 0 1 .76-.43l7 4.2a.5.5 0 0 1 0 .86l-7 4.2a.5.5 0 0 1-.76-.43V1.8Z" />
+                </svg>
+                <span>Run</span>
+                <kbd class="shortcut-kbd">⌘↵</kbd>
+              </button>
+            </div>
+          </div>
+
+          <div class="sql-panel-body" id="sqlPanelBody">
+            <div class="sql-editor-workspace" id="sqlEditorWorkspace">
+              <div class="sql-gutter" id="sqlLineGutter" aria-hidden="true">
+                <span>1</span>
+              </div>
+              <textarea
+                id="sqlEditorInput"
+                class="sql-textarea"
+                spellcheck="false"
+                autocapitalize="off"
+                autocomplete="off"
+                aria-label="SQL query editor"
+                placeholder="-- Write a PostgreSQL query here (e.g. SELECT * FROM table_name WHERE data > value;)&#10;-- Press Run or ⌘+Enter to execute."
+              ></textarea>
+            </div>
+
+            <!-- Interactive Draggable Split Resizer -->
+            <div
+              class="sql-split-resizer"
+              id="sqlSplitResizer"
+              role="separator"
+              aria-orientation="vertical"
+              aria-label="Resize SQL editor and results panels"
+              title="Drag to resize SQL editor and results (Double-click to reset)"
+              tabindex="0"
+            >
+              <div class="split-resizer-grip" aria-hidden="true"></div>
+            </div>
+
+            <!-- Bottom SQL Results Panel -->
+            <div class="sql-results-workspace" id="sqlResultsWorkspace" aria-label="SQL Query Results">
+              <div class="results-header-bar" id="resultsHeaderBar">
+                <div class="results-nav-tabs" id="resultsNavTabs" role="tablist" aria-label="Query Result Sets"></div>
+                <div class="results-meta-actions">
+                  <span class="results-timing-badge" id="resultsTimingBadge" title="Statement execution time">0.00ms</span>
+                  <span class="results-row-badge" id="resultsRowBadge" title="Rows returned or affected">0 rows</span>
+                  <button
+                    type="button"
+                    class="results-clear-btn"
+                    id="resultsClearBtn"
+                    title="Clear results panel (reset to empty)"
+                  >
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M2.5 4.5h11M5.5 4.5V3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1.5M6.5 7.5v5M9.5 7.5v5M4 4.5l.8 9.5a1 1 0 0 0 1 .9h4.4a1 1 0 0 0 1-.9l.8-9.5"/>
+                    </svg>
+                    <span>Clear</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="results-export-btn hidden"
+                    id="resultsExportBtn"
+                    title="Export currently selected result set to CSV"
+                  >
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M8 2.5v8M8 10.5l-3-3M8 10.5l3-3M2.5 11.5v1a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-1" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <span>Export CSV</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="results-body" id="resultsBody">
+                <!-- Idle State -->
+                <div class="results-state-box" id="resultsIdleState">
+                  <span class="results-state-icon" aria-hidden="true">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                    </svg>
+                  </span>
+                  <p class="results-state-title">No query executed yet</p>
+                  <p class="results-state-subtitle">Type a query in the editor and press <kbd>⌘↵</kbd> or Run.</p>
+                </div>
+
+                <!-- Loading State -->
+                <div class="results-state-box hidden" id="resultsLoadingState">
+                  <div class="spinner" aria-hidden="true"></div>
+                  <p class="results-state-title">Executing query on PostgreSQL…</p>
+                  <p class="results-state-subtitle">Running statement in session</p>
+                </div>
+
+                <!-- Command Feedback State (for INSERT / UPDATE / DELETE / DDL) -->
+                <div class="results-state-box results-command-box hidden" id="resultsCommandState">
+                  <span class="command-badge-pill" id="resultsCommandTitle">COMMAND</span>
+                  <p class="results-state-subtitle" id="resultsCommandSubtitle">0 rows affected</p>
+                  <button
+                    type="button"
+                    class="command-clear-btn"
+                    id="resultsCommandDismissBtn"
+                    title="Clear command message and return to idle"
+                  >
+                    <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M2.5 4.5h11M5.5 4.5V3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1.5M6.5 7.5v5M9.5 7.5v5M4 4.5l.8 9.5a1 1 0 0 0 1 .9h4.4a1 1 0 0 0 1-.9l.8-9.5"/>
+                    </svg>
+                    <span>Clear</span>
+                  </button>
+                </div>
+
+                <!-- Error State -->
+                <div class="results-state-box results-error-box hidden" id="resultsErrorState" role="alert">
+                  <div class="error-badge-icon" aria-hidden="true">!</div>
+                  <div class="results-error-content">
+                    <p class="results-error-title" id="resultsErrorTitle">Query execution error</p>
+                    <pre class="results-error-message" id="resultsErrorMessage"></pre>
+                    <div class="error-tags" id="resultsErrorTags">
+                      <span class="error-tag hidden" id="resultsErrorCodeTag"></span>
+                      <span class="error-tag hidden" id="resultsErrorPosTag"></span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Table Viewport for SELECT statements -->
+                <div class="results-table-viewport hidden" id="resultsTableViewport">
+                  <table class="sheet-grid results-grid" id="resultsGrid" role="grid">
+                    <thead id="resultsGridHead"></thead>
+                    <tbody id="resultsGridBody"></tbody>
+                  </table>
+                  <div class="results-empty-rows hidden" id="resultsEmptyRows">
+                    <p class="results-empty-text">Query executed successfully. 0 rows returned.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Query History Drawer Overlay -->
+          <div class="sql-history-drawer hidden" id="sqlHistoryDrawer">
+            <div class="sql-history-header">
+              <div class="sql-history-header-left">
+                <button
+                  type="button"
+                  class="sql-history-back-btn"
+                  id="closeSqlHistoryBtn"
+                  title="Return to Query / Results"
+                >
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <span>Back to Query</span>
+                </button>
+                <span class="sql-history-title">Recent Query History</span>
+              </div>
+              <button type="button" class="sql-history-clear-btn" id="clearSqlHistoryBtn" title="Clear query history">Clear History</button>
+            </div>
+            <div class="sql-history-list" id="sqlHistoryList"></div>
+          </div>
+
+          <!-- Floating Panel 8-Direction Resizer Handles -->
+          <div class="floating-resizer-handle floating-resizer-e" data-dir="e" aria-hidden="true"></div>
+          <div class="floating-resizer-handle floating-resizer-s" data-dir="s" aria-hidden="true"></div>
+          <div class="floating-resizer-handle floating-resizer-w" data-dir="w" aria-hidden="true"></div>
+          <div class="floating-resizer-handle floating-resizer-n" data-dir="n" aria-hidden="true"></div>
+          <div class="floating-resizer-handle floating-resizer-se" data-dir="se" aria-hidden="true" title="Resize floating SQL editor (Double-click to reset size)"></div>
+          <div class="floating-resizer-handle floating-resizer-sw" data-dir="sw" aria-hidden="true"></div>
+          <div class="floating-resizer-handle floating-resizer-ne" data-dir="ne" aria-hidden="true"></div>
+          <div class="floating-resizer-handle floating-resizer-nw" data-dir="nw" aria-hidden="true"></div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Settings Backdrop & Drawer -->
+    <div class="customization-backdrop hidden" id="customizationBackdrop" aria-hidden="true"></div>
+    <aside
+      class="customization-drawer hidden"
+      id="customizationDrawer"
+      role="dialog"
+      aria-modal="false"
+      aria-labelledby="customizationDrawerTitle"
+    >
+      <div class="drawer-header">
+        <div class="drawer-title-group">
+          <h2 class="drawer-title" id="customizationDrawerTitle">Settings</h2>
+        </div>
+        <button
+          type="button"
+          class="icon-btn"
+          id="customizationCloseBtn"
+          title="Close Settings (Esc)"
+          aria-label="Close Settings"
+        >
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="drawer-body">
+        <!-- Section: Database Environment -->
+        <section class="settings-section" aria-labelledby="secEnvHeading">
+          <div class="settings-section-head">
+            <h3 class="settings-section-title" id="secEnvHeading">Database Environment</h3>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-label-row">
+              <span class="setting-label">Operating Mode</span>
+              <span class="setting-hint" id="settingEnvHint">Real Database active</span>
+            </div>
+            <div class="segmented-control" role="radiogroup" aria-label="Database Operating Mode">
+              <button
+                type="button"
+                class="seg-btn"
+                id="settingModePlaygroundBtn"
+                data-mode="playground"
+                role="radio"
+                aria-checked="false"
+              >
+                Playground Sandbox
+              </button>
+              <button
+                type="button"
+                class="seg-btn active"
+                id="settingModeRealBtn"
+                data-mode="default"
+                role="radio"
+                aria-checked="true"
+              >
+                Real Database
+              </button>
+            </div>
+          </div>
+
+          <p class="settings-caption" id="settingEnvDescription" style="font-size: 11px; color: var(--text-muted); margin-top: 8px; line-height: 1.45;">
+            Playground Mode operates on an isolated university showcase database (<code>rowvane_playground</code>) with Demos &amp; Chaos testing. Real Database Mode connects to your primary database.
+          </p>
+        </section>
+
+        <!-- Section 1: Layout -->
+        <section class="settings-section" aria-labelledby="secLayoutHeading">
+          <div class="settings-section-head">
+            <h3 class="settings-section-title" id="secLayoutHeading">Layout</h3>
+          </div>
+
+          <!-- Workspace Margin Continuum (0px Flush to 24px Generous) -->
+          <div class="setting-row">
+            <div class="setting-label-row">
+              <label for="framingSlider" class="setting-label">Workspace Margin</label>
+              <span class="setting-value-badge" id="framingValueLabel">0px (Flush)</span>
+            </div>
+            <div class="spectrum-control">
+              <input
+                type="range"
+                id="framingSlider"
+                class="custom-slider"
+                min="0"
+                max="24"
+                step="1"
+                value="0"
+                aria-label="Workspace Margin in Pixels"
+              />
+              <div class="scale-legend scale-legend-3pt scale-legend-margin" aria-hidden="true">
+                <span>0px</span>
+                <span>12px</span>
+                <span>24px</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Resizing Policy: Guided vs Freeform -->
+          <div class="setting-row">
+            <div class="setting-label-row">
+              <span class="setting-label">Panel Resizing Policy</span>
+              <span class="setting-hint" id="resizePolicyHint">Smart bounds</span>
+            </div>
+            <div class="segmented-control" role="radiogroup" aria-label="Panel Resizing Policy">
+              <button
+                type="button"
+                class="seg-btn active"
+                data-setting="resizePolicy"
+                data-value="guided"
+                role="radio"
+                aria-checked="true"
+              >
+                Guided
+              </button>
+              <button
+                type="button"
+                class="seg-btn"
+                data-setting="resizePolicy"
+                data-value="freeform"
+                role="radio"
+                aria-checked="false"
+              >
+                Freeform
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 2: Shape & Density -->
+        <section class="settings-section" aria-labelledby="secShapeHeading">
+          <div class="settings-section-head">
+            <h3 class="settings-section-title" id="secShapeHeading">Shape &amp; Density</h3>
+          </div>
+
+          <!-- Grid Density -->
+          <div class="setting-row">
+            <div class="setting-label-row">
+              <span class="setting-label">Grid &amp; UI Density</span>
+            </div>
+            <div class="segmented-control" role="radiogroup" aria-label="Grid Density">
+              <button
+                type="button"
+                class="seg-btn"
+                data-setting="density"
+                data-value="compact"
+                role="radio"
+                aria-checked="false"
+              >
+                Compact
+              </button>
+              <button
+                type="button"
+                class="seg-btn active"
+                data-setting="density"
+                data-value="balanced"
+                role="radio"
+                aria-checked="true"
+              >
+                Balanced
+              </button>
+              <button
+                type="button"
+                class="seg-btn"
+                data-setting="density"
+                data-value="spacious"
+                role="radio"
+                aria-checked="false"
+              >
+                Spacious
+              </button>
+            </div>
+          </div>
+
+          <!-- Global Corner Roundness (7 levels: 0..6 Semantic Progression) -->
+          <div class="setting-row">
+            <div class="setting-label-row">
+              <label for="globalRoundnessSlider" class="setting-label">Overall Corner Profile</label>
+              <span class="setting-value-badge" id="globalRoundnessLabel">Compact (L2)</span>
+            </div>
+            <input
+              type="range"
+              id="globalRoundnessSlider"
+              class="custom-slider"
+              min="0"
+              max="6"
+              step="1"
+              value="2"
+              aria-label="Overall Corner Profile (Level 0 None to Level 6 Generous)"
+            />
+            <div class="scale-legend scale-legend-3pt scale-legend-corner" aria-hidden="true">
+              <span>None</span>
+              <span>Balanced</span>
+              <span>Generous</span>
+            </div>
+          </div>
+
+          <!-- Per-Group Component Shape Overrides -->
+          <div class="overrides-box">
+            <div class="overrides-header">
+              <span class="overrides-title">Component Group Overrides</span>
+              <button type="button" class="text-link-btn" id="clearShapeOverridesBtn">
+                Use Global
+              </button>
+            </div>
+
+            <!-- Panels Override -->
+            <div class="override-item">
+              <div class="override-item-head">
+                <div class="override-label-group">
+                  <label for="panelRoundnessSelect" class="override-label">Panels</label>
+                  <button type="button" class="override-info-btn" aria-label="Toggle details for Panels override" data-info-target="panelRoundnessInfo" aria-expanded="false">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="16" x2="12" y2="12"></line>
+                      <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                  </button>
+                </div>
+                <select id="panelRoundnessSelect" class="custom-select" aria-label="Panels corner shape override">
+                  <option value="inherit">Inherit</option>
+                  <option value="0">L0 · None (0px)</option>
+                  <option value="1">L1 · Tight (3px)</option>
+                  <option value="2">L2 · Compact (6px)</option>
+                  <option value="3">L3 · Balanced (9px)</option>
+                  <option value="4">L4 · Soft (13px)</option>
+                  <option value="5">L5 · Relaxed (18px)</option>
+                  <option value="6">L6 · Generous (22px)</option>
+                </select>
+              </div>
+              <div class="override-info-panel hidden" id="panelRoundnessInfo">
+                <div class="override-info-row"><span class="info-tag">Controls:</span> Top toolbar, sidebar, data grid container, SQL workspace panel, resize drag handles, and divider rails.</div>
+                <div class="override-info-row"><span class="info-tag">Effect:</span> Adjusts corner curvature across the primary workspace panels and divider rails (0px to 22px).</div>
+                <div class="override-info-row"><span class="info-tag">Boundaries:</span> Applies to outer panel shells and divider boundaries; internal table cells and controls follow their own groups.</div>
+                <div class="override-info-row"><span class="info-tag info-tag-excluded">Excluded:</span> Detached floating panel states and dialog drawers (governed by Floating &amp; Overlays).</div>
+              </div>
+            </div>
+
+            <!-- Buttons & Actions Override -->
+            <div class="override-item">
+              <div class="override-item-head">
+                <div class="override-label-group">
+                  <label for="buttonRoundnessSelect" class="override-label">Buttons &amp; Actions</label>
+                  <button type="button" class="override-info-btn" aria-label="Toggle details for Buttons & Actions override" data-info-target="buttonRoundnessInfo" aria-expanded="false">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="16" x2="12" y2="12"></line>
+                      <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                  </button>
+                </div>
+                <select id="buttonRoundnessSelect" class="custom-select" aria-label="Buttons corner shape override">
+                  <option value="inherit">Inherit</option>
+                  <option value="0">L0 · None (0px)</option>
+                  <option value="1">L1 · Tight (2px)</option>
+                  <option value="2">L2 · Compact (4px)</option>
+                  <option value="3">L3 · Balanced (6px)</option>
+                  <option value="4">L4 · Soft (9px)</option>
+                  <option value="5">L5 · Relaxed (12px)</option>
+                  <option value="6">L6 · Generous (16px)</option>
+                </select>
+              </div>
+              <div class="override-info-panel hidden" id="buttonRoundnessInfo">
+                <div class="override-info-row"><span class="info-tag">Controls:</span> Toolbar action buttons (Connect DB, Backup / Restore, Refresh, Import, Export), query run button, and dialog actions.</div>
+                <div class="override-info-row"><span class="info-tag">Effect:</span> Adjusts button corner radius from sharp rectangles (0px) up to rounded controls (16px).</div>
+                <div class="override-info-row"><span class="info-tag">Boundaries:</span> Applies strictly to clickable command buttons and action triggers.</div>
+                <div class="override-info-row"><span class="info-tag info-tag-excluded">Excluded:</span> Panel divider rails, scrollbars, and navigation selection lists.</div>
+              </div>
+            </div>
+
+            <!-- Inputs & Dropdowns Override -->
+            <div class="override-item">
+              <div class="override-item-head">
+                <div class="override-label-group">
+                  <label for="inputRoundnessSelect" class="override-label">Inputs &amp; Dropdowns</label>
+                  <button type="button" class="override-info-btn" aria-label="Toggle details for Inputs & Dropdowns override" data-info-target="inputRoundnessInfo" aria-expanded="false">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="16" x2="12" y2="12"></line>
+                      <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                  </button>
+                </div>
+                <select id="inputRoundnessSelect" class="custom-select" aria-label="Inputs and dropdowns corner shape override">
+                  <option value="inherit">Inherit</option>
+                  <option value="0">L0 · None (0px)</option>
+                  <option value="1">L1 · Tight (2px)</option>
+                  <option value="2">L2 · Compact (4px)</option>
+                  <option value="3">L3 · Balanced (6px)</option>
+                  <option value="4">L4 · Soft (8px)</option>
+                  <option value="5">L5 · Relaxed (9px)</option>
+                  <option value="6">L6 · Generous (10px)</option>
+                </select>
+              </div>
+              <div class="override-info-panel hidden" id="inputRoundnessInfo">
+                <div class="override-info-row"><span class="info-tag">Controls:</span> Dropdown select menus, form text fields, modal inputs, and data import drop cards.</div>
+                <div class="override-info-row"><span class="info-tag">Effect:</span> Adjusts corner curvature across data entry inputs (0px to 10px) with a protective ceiling for text clarity.</div>
+                <div class="override-info-row"><span class="info-tag">Boundaries:</span> Applies to input fields, selectors, and form elements.</div>
+                <div class="override-info-row"><span class="info-tag info-tag-excluded">Excluded:</span> SQL query editor canvas (governed by Table Grid &amp; SQL) and toast alerts (governed by Floating &amp; Overlays).</div>
+              </div>
+            </div>
+
+            <!-- Navigation & Controls Override -->
+            <div class="override-item">
+              <div class="override-item-head">
+                <div class="override-label-group">
+                  <label for="navRoundnessSelect" class="override-label">Navigation &amp; Controls</label>
+                  <button type="button" class="override-info-btn" aria-label="Toggle details for Navigation & Controls override" data-info-target="navRoundnessInfo" aria-expanded="false">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="16" x2="12" y2="12"></line>
+                      <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                  </button>
+                </div>
+                <select id="navRoundnessSelect" class="custom-select" aria-label="Navigation corner shape override">
+                  <option value="inherit">Inherit</option>
+                  <option value="0">L0 · None (0px)</option>
+                  <option value="1">L1 · Tight (2px)</option>
+                  <option value="2">L2 · Compact (4px)</option>
+                  <option value="3">L3 · Balanced (6px)</option>
+                  <option value="4">L4 · Soft (8px)</option>
+                  <option value="5">L5 · Relaxed (10px)</option>
+                  <option value="6">L6 · Generous (12px)</option>
+                </select>
+              </div>
+              <div class="override-info-panel hidden" id="navRoundnessInfo">
+                <div class="override-info-row"><span class="info-tag">Controls:</span> Sidebar table navigation items, active table breadcrumbs, connection status badges, and view toggle switches.</div>
+                <div class="override-info-row"><span class="info-tag">Effect:</span> Adjusts corner curvature of navigation items and status badges from sharp edges (0px) up to rounded indicators (12px).</div>
+                <div class="override-info-row"><span class="info-tag">Boundaries:</span> Applies to navigation targets, active indicators, and view switcher controls.</div>
+                <div class="override-info-row"><span class="info-tag info-tag-excluded">Excluded:</span> Table column sorting headers and browser application chrome.</div>
+              </div>
+            </div>
+
+            <!-- Table Grid & SQL Override -->
+            <div class="override-item">
+              <div class="override-item-head">
+                <div class="override-label-group">
+                  <label for="tableRoundnessSelect" class="override-label">Table Grid &amp; SQL</label>
+                  <button type="button" class="override-info-btn" aria-label="Toggle details for Table Grid & SQL override" data-info-target="tableRoundnessInfo" aria-expanded="false">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="16" x2="12" y2="12"></line>
+                      <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                  </button>
+                </div>
+                <select id="tableRoundnessSelect" class="custom-select" aria-label="Table grid and SQL editor corner shape override">
+                  <option value="inherit">Inherit</option>
+                  <option value="0">L0 · None (0px)</option>
+                  <option value="1">L1 · Tight (2px)</option>
+                  <option value="2">L2 · Compact (4px)</option>
+                  <option value="3">L3 · Balanced (6px)</option>
+                  <option value="4">L4 · Soft (8px)</option>
+                  <option value="5">L5 · Relaxed (11px)</option>
+                  <option value="6">L6 · Generous (14px)</option>
+                </select>
+              </div>
+              <div class="override-info-panel hidden" id="tableRoundnessInfo">
+                <div class="override-info-row"><span class="info-tag">Controls:</span> Data grid cells, column headers, row indices, grid status bar, SQL editor canvas, and query tabs.</div>
+                <div class="override-info-row"><span class="info-tag">Effect:</span> Adjusts corner curvature across spreadsheet grid cells and code editor surfaces (0px to 14px).</div>
+                <div class="override-info-row"><span class="info-tag">Boundaries:</span> Applies to data grid cells, headers, row numbers, and the SQL editor workspace.</div>
+                <div class="override-info-row"><span class="info-tag info-tag-excluded">Excluded:</span> Outer panel frames (governed by Panels) and toolbar action buttons.</div>
+              </div>
+            </div>
+
+            <!-- Floating & Overlays Override -->
+            <div class="override-item">
+              <div class="override-item-head">
+                <div class="override-label-group">
+                  <label for="overlayRoundnessSelect" class="override-label">Floating &amp; Overlays</label>
+                  <button type="button" class="override-info-btn" aria-label="Toggle details for Floating & Overlays override" data-info-target="overlayRoundnessInfo" aria-expanded="false">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="16" x2="12" y2="12"></line>
+                      <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                  </button>
+                </div>
+                <select id="overlayRoundnessSelect" class="custom-select" aria-label="Floating and overlays corner shape override">
+                  <option value="inherit">Inherit</option>
+                  <option value="0">L0 · None (0px)</option>
+                  <option value="1">L1 · Tight (4px)</option>
+                  <option value="2">L2 · Compact (8px)</option>
+                  <option value="3">L3 · Balanced (11px)</option>
+                  <option value="4">L4 · Soft (16px)</option>
+                  <option value="5">L5 · Relaxed (20px)</option>
+                  <option value="6">L6 · Generous (24px)</option>
+                </select>
+              </div>
+              <div class="override-info-panel hidden" id="overlayRoundnessInfo">
+                <div class="override-info-row"><span class="info-tag">Controls:</span> Settings drawer, floating sidebar, floating SQL workspace, dialog modals, and toast notification alerts.</div>
+                <div class="override-info-row"><span class="info-tag">Effect:</span> Adjusts surface curvature across elevated floating layers (0px to 24px) for distinct depth and elevation.</div>
+                <div class="override-info-row"><span class="info-tag">Boundaries:</span> Applies to elevated overlays, floating panels, modals, and toast notifications.</div>
+                <div class="override-info-row"><span class="info-tag info-tag-excluded">Excluded:</span> Docked panels (governed by Panels) and inline workspace controls.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 3: SQL Execution & History -->
+        <section class="settings-section" aria-labelledby="secSqlHeading">
+          <div class="settings-section-head">
+            <h3 class="settings-section-title" id="secSqlHeading">SQL Execution &amp; History</h3>
+          </div>
+
+          <!-- Setting: After Execution -->
+          <div class="setting-row">
+            <div class="setting-label-row">
+              <span class="setting-label">After Execution</span>
+            </div>
+            <div class="segmented-control" role="radiogroup" aria-label="Query Clearance After Run">
+              <button
+                type="button"
+                class="seg-btn active"
+                data-setting="sqlAfterExecution"
+                data-value="keep"
+                role="radio"
+                aria-checked="true"
+                title="Retain query text in editor after successful run"
+              >
+                Keep Query
+              </button>
+              <button
+                type="button"
+                class="seg-btn"
+                data-setting="sqlAfterExecution"
+                data-value="clear"
+                role="radio"
+                aria-checked="false"
+                title="Clear editor on successful run"
+              >
+                Clear Query
+              </button>
+              <button
+                type="button"
+                class="seg-btn"
+                data-setting="sqlAfterExecution"
+                data-value="restrictive"
+                role="radio"
+                aria-checked="false"
+                title="If selection executed, remove only executed selection; keep remainder"
+              >
+                Restrictive
+              </button>
+            </div>
+          </div>
+
+          <!-- Setting: Execution Destination -->
+          <div class="setting-row">
+            <div class="setting-label-row">
+              <span class="setting-label">Execution Destination</span>
+            </div>
+            <div class="segmented-control" role="radiogroup" aria-label="Tab Destination on Run">
+              <button
+                type="button"
+                class="seg-btn"
+                data-setting="sqlExecutionDestination"
+                data-value="query"
+                role="radio"
+                aria-checked="false"
+                title="Remain in SQL Editor tab on successful run"
+              >
+                Stay in Query
+              </button>
+              <button
+                type="button"
+                class="seg-btn"
+                data-setting="sqlExecutionDestination"
+                data-value="results"
+                role="radio"
+                aria-checked="false"
+                title="Switch to full Results view on successful run"
+              >
+                Results View
+              </button>
+              <button
+                type="button"
+                class="seg-btn active"
+                data-setting="sqlExecutionDestination"
+                data-value="split"
+                role="radio"
+                aria-checked="true"
+                title="Show side-by-side Split view on successful run"
+              >
+                Split View
+              </button>
+            </div>
+          </div>
+
+          <!-- Setting: History Retention -->
+          <div class="setting-row">
+            <div class="setting-label-row">
+              <label for="sqlHistoryRetentionSelect" class="setting-label">History Retention</label>
+            </div>
+            <select id="sqlHistoryRetentionSelect" class="custom-select sql-retention-select" aria-label="Maximum queries retained in history">
+              <option value="50">50 recent queries</option>
+              <option value="100" selected>100 recent queries (Default)</option>
+              <option value="250">250 recent queries</option>
+              <option value="500">500 recent queries</option>
+              <option value="1000">1,000 recent queries</option>
+            </select>
+          </div>
+        </section>
+
+        <!-- Section 4: Motion -->
+        <section class="settings-section" aria-labelledby="secMotionHeading">
+          <div class="settings-section-head">
+            <h3 class="settings-section-title" id="secMotionHeading">Motion</h3>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-label-row">
+              <span class="setting-label">Transition Feel</span>
+            </div>
+            <div class="segmented-control" role="radiogroup" aria-label="Transition Feel">
+              <button
+                type="button"
+                class="seg-btn"
+                data-setting="motionProfile"
+                data-value="slick"
+                role="radio"
+                aria-checked="false"
+              >
+                Slick
+              </button>
+              <button
+                type="button"
+                class="seg-btn active"
+                data-setting="motionProfile"
+                data-value="smooth"
+                role="radio"
+                aria-checked="true"
+              >
+                Smooth
+              </button>
+              <button
+                type="button"
+                class="seg-btn"
+                data-setting="motionProfile"
+                data-value="fluid"
+                role="radio"
+                aria-checked="false"
+              >
+                Fluid
+              </button>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-label-row">
+              <label for="motionSpeedSlider" class="setting-label">Animation Speed</label>
+              <span class="setting-value-badge" id="motionSpeedLabel">1.0× Normal</span>
+            </div>
+            <input
+              type="range"
+              id="motionSpeedSlider"
+              class="custom-slider"
+              min="0.25"
+              max="2.0"
+              step="0.25"
+              value="1"
+              aria-label="Animation Speed Multiplier"
+            />
+            <div class="scale-legend scale-legend-3pt scale-legend-speed" aria-hidden="true">
+              <span>0.25×</span>
+              <span>1×</span>
+              <span>2×</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 4: Reset / Defaults -->
+        <section class="settings-section settings-section-footer" aria-labelledby="secResetHeading">
+          <div class="settings-section-head">
+            <h3 class="settings-section-title" id="secResetHeading">Reset &amp; Defaults</h3>
+          </div>
+          <p class="reset-description">
+            Restore all layout, shape, density, panel sizes, and motion settings to Rowvane’s studio defaults.
+          </p>
+          <div class="reset-container">
+            <!-- Anchored Drop-Up Confirmation Box (Opens upwards from restore button) -->
+            <div id="resetConfirmBox" class="reset-dropup-panel hidden" role="alertdialog" aria-labelledby="resetConfirmPrompt">
+              <div class="reset-dropup-header">
+                <span class="reset-dropup-title" id="resetConfirmPrompt">Restore Studio Defaults</span>
+                <span class="reset-diff-summary" id="resetDiffSummary">Review changed settings</span>
+                <span class="reset-diff-instruction">Click any setting to exclude it from reset</span>
+              </div>
+              <div class="reset-diff-list" id="resetDiffList">
+                <!-- Dynamically populated side-by-side comparison of modified vs default settings -->
+              </div>
+              <div class="reset-confirm-actions">
+                <button type="button" class="reset-cancel-btn" id="resetCancelBtn">Cancel</button>
+                <button type="button" class="reset-confirm-btn" id="resetConfirmBtn">Confirm Reset</button>
+              </div>
+            </div>
+
+            <div id="resetInitialBox">
+              <button type="button" class="reset-defaults-btn" id="resetCustomizationBtn">
+                <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M2.5 8a5.5 5.5 0 1 0 1.62-3.89M2.5 2.5v3h3" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span>Restore Studio Defaults…</span>
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </aside>
+
+    <!-- CSV Import Modal Dialog -->
+    <div class="modal-backdrop hidden" id="csvImportModal" role="dialog" aria-modal="true" aria-labelledby="csvModalTitle">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3 class="modal-title" id="csvModalTitle">CSV Data Import</h3>
+          <button type="button" class="modal-close-btn" id="csvCancelImportBtn" aria-label="Close dialog">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="csv-drop-zone" id="csvDropZone">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+            </svg>
+            <p class="drop-text">Drag and drop a <code>.csv</code> file here, or click to browse</p>
+            <input type="file" id="csvFileInput" accept=".csv,text/csv" class="hidden-file-input" />
+          </div>
+
+          <div class="csv-mode-selection">
+            <label class="radio-label">
+              <input type="radio" name="csvTargetMode" id="csvModeNewTable" value="new" checked />
+              <span>Create New Table</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="csvTargetMode" id="csvModeExistingTable" value="existing" />
+              <span>Import into Existing Table</span>
+            </label>
+          </div>
+
+          <div class="csv-table-input-row" id="csvNewTableGroup">
+            <label for="csvTargetTableName">New Table Name:</label>
+            <input type="text" id="csvTargetTableName" class="modal-input" placeholder="e.g. quarterly_sales" />
+          </div>
+
+          <div class="csv-table-input-row hidden" id="csvExistingTableGroup">
+            <label for="csvExistingTableSelect">Select Table:</label>
+            <select id="csvExistingTableSelect" class="modal-input"></select>
+          </div>
+
+          <div id="csvPreviewArea"></div>
+          <div id="csvMappingArea"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="modal-btn modal-btn-secondary" id="csvModalCancelBtn">Cancel</button>
+          <button type="button" class="modal-btn modal-btn-primary" id="csvExecuteImportBtn" disabled>
+            Execute Import
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Native Backup & Restore Modal Dialog -->
+    <div class="modal-backdrop hidden" id="backupRestoreModal" role="dialog" aria-modal="true" aria-labelledby="backupModalTitle">
+      <div class="modal-box backup-modal-box">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title" id="backupModalTitle">PostgreSQL Backup &amp; Restore</h3>
+            <p class="modal-subtitle">Snapshot active database state or restore from an existing SQL script.</p>
+          </div>
+          <button type="button" class="modal-close-btn" id="backupRestoreCloseBtn" aria-label="Close dialog">&times;</button>
+        </div>
+        <div class="modal-body backup-modal-body">
+          <!-- 1. Native CLI Environment Status -->
+          <div class="backup-section">
+            <div class="backup-section-header">
+              <span class="backup-sec-label">CLI Utilities Status</span>
+            </div>
+            <div id="backupUtilityStatus" class="backup-util-status"></div>
+          </div>
+
+          <!-- 2. Create Database Backup -->
+          <div class="backup-section">
+            <div class="backup-section-header">
+              <h4 class="backup-section-title">Create Database Backup</h4>
+              <p class="backup-section-desc">Generate a complete snapshot of the active PostgreSQL schema and records.</p>
+            </div>
+            <div class="backup-formats-grid">
+              <!-- Format Card: Plain SQL -->
+              <div class="backup-format-card">
+                <div class="backup-format-info">
+                  <div class="backup-format-title-row">
+                    <span class="backup-format-name">Plain SQL</span>
+                    <span class="backup-format-ext">.sql</span>
+                  </div>
+                  <p class="backup-format-desc">
+                    Human-readable SQL script with standard DDL and DML statements. Best for auditing, version control, or restoring via <code>psql</code> and query tools.
+                  </p>
+                </div>
+                <button type="button" class="modal-btn modal-btn-secondary backup-download-btn" id="downloadSqlBackupBtn">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M8 2.5v8M8 10.5l-3-3M8 10.5l3-3M2.5 11.5v1a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-1" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  <span>Download Plain SQL (.sql)</span>
+                </button>
+              </div>
+
+              <!-- Format Card: Custom Archive -->
+              <div class="backup-format-card">
+                <div class="backup-format-info">
+                  <div class="backup-format-title-row">
+                    <span class="backup-format-name">Custom Format</span>
+                    <span class="backup-format-ext">.dump</span>
+                  </div>
+                  <p class="backup-format-desc">
+                    PostgreSQL-specific compressed binary archive intended for <code>pg_restore</code>. Supports selective table recovery, schema reordering, and parallel restoration.
+                  </p>
+                </div>
+                <button type="button" class="modal-btn modal-btn-secondary backup-download-btn" id="downloadDumpBackupBtn">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M8 2.5v8M8 10.5l-3-3M8 10.5l3-3M2.5 11.5v1a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-1" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  <span>Download Custom Format (.dump)</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Restore Database from SQL Script -->
+          <div class="backup-section restore-section">
+            <div class="backup-section-header">
+              <h4 class="backup-section-title">Restore Database from SQL Script</h4>
+              <p class="backup-section-desc">Execute an existing <code>.sql</code> script against the active database.</p>
+            </div>
+
+            <div class="backup-danger-card">
+              <div class="danger-card-header">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;">
+                  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <span class="danger-card-title">Destructive Action Notice</span>
+              </div>
+              <p class="danger-card-text">
+                Restoring executes real DDL and DML statements against the active database. Existing tables and records may be modified, truncated, or permanently overwritten. Always take a fresh backup before restoring.
+              </p>
+            </div>
+
+            <div class="restore-picker-container">
+              <label class="restore-picker-label" for="restoreFileInput">
+                <span class="restore-picker-prompt">Select SQL Script to Restore</span>
+                <span class="restore-picker-sub">Accepts valid PostgreSQL <code>.sql</code> script files</span>
+              </label>
+              <input type="file" id="restoreFileInput" accept=".sql" class="modal-file-picker restore-file-input" />
+            </div>
+
+            <div id="restorePreviewArea" class="restore-preview-area"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="modal-btn modal-btn-secondary" id="backupModalCloseBtn">Close</button>
+          <button type="button" class="modal-btn modal-btn-danger" id="executeRestoreBtn" disabled>
+            Execute Restore
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Insert Row Modal Dialog -->
+    <div class="modal-backdrop hidden" id="insertRowModal" role="dialog" aria-modal="true" aria-labelledby="insertRowModalTitle">
+      <div class="modal-box modal-box-large">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title" id="insertRowModalTitle">Insert New Row</h3>
+            <p class="modal-subtitle" id="insertRowModalSubtitle">Add a record to the active table.</p>
+          </div>
+          <button type="button" class="modal-close-btn" id="insertRowCloseBtn" aria-label="Close dialog">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div id="insertRowFormFields" class="row-form-fields-grid"></div>
+          <div id="insertRowErrorBanner" class="danger-banner hidden"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="modal-btn modal-btn-secondary" id="insertRowCancelBtn">Cancel</button>
+          <button type="button" class="modal-btn modal-btn-primary" id="insertRowSubmitBtn">
+            <span>Save Row to PostgreSQL</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Row Confirmation Modal Dialog -->
+    <div class="modal-backdrop hidden" id="deleteRowModal" role="dialog" aria-modal="true" aria-labelledby="deleteRowModalTitle">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3 class="modal-title" id="deleteRowModalTitle">Confirm Row Deletion</h3>
+          <button type="button" class="modal-close-btn" id="deleteRowCloseBtn" aria-label="Close dialog">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="danger-banner">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>Warning: This operation will permanently delete this row from PostgreSQL.</span>
+          </div>
+          <p class="delete-confirm-text" id="deleteRowConfirmText">Are you sure you want to delete the selected row?</p>
+          <div class="delete-row-summary" id="deleteRowSummaryBox"></div>
+          <div id="deleteRowErrorBanner" class="danger-banner hidden"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="modal-btn modal-btn-secondary" id="deleteRowCancelBtn">Cancel</button>
+          <button type="button" class="modal-btn modal-btn-danger" id="deleteRowConfirmBtn">
+            <span>Delete Row</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Real Database Connection Modal Dialog -->
+    <div class="modal-backdrop hidden" id="connectDbModal" role="dialog" aria-modal="true" aria-labelledby="connectDbModalTitle">
+      <div class="modal-box modal-box-large">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title" id="connectDbModalTitle">Connect PostgreSQL Database</h3>
+            <p class="modal-subtitle">Connect to your own local or remote PostgreSQL instance (Docker, Neon, Supabase, Railway, RDS).</p>
+          </div>
+          <button type="button" class="modal-close-btn" id="connectDbCloseBtn" aria-label="Close dialog">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="connect-tabs-row">
+            <button type="button" class="connect-tab active" id="connTabParams">Standard Parameters</button>
+            <button type="button" class="connect-tab" id="connTabUri">Connection URI</button>
+          </div>
+
+          <div id="connParamsPanel" class="connect-panel">
+            <div class="connect-form-grid">
+              <div class="connect-form-group span-2">
+                <label class="connect-label">Connection Profile Nickname</label>
+                <input type="text" id="connNickInput" class="modal-input" placeholder="e.g. Production Analytics" />
+              </div>
+              <div class="connect-form-group span-2">
+                <label class="connect-label">Host / IP Address</label>
+                <input type="text" id="connHostInput" class="modal-input" placeholder="localhost (or db.example.com)" value="localhost" />
+              </div>
+              <div class="connect-form-group">
+                <label class="connect-label">Port</label>
+                <input type="number" id="connPortInput" class="modal-input" placeholder="5432" value="5432" />
+              </div>
+              <div class="connect-form-group">
+                <label class="connect-label">Database Name</label>
+                <input type="text" id="connDbInput" class="modal-input" placeholder="e.g. postgres or my_app" />
+              </div>
+              <div class="connect-form-group">
+                <label class="connect-label">Username</label>
+                <input type="text" id="connUserInput" class="modal-input" placeholder="postgres" value="postgres" />
+              </div>
+              <div class="connect-form-group">
+                <label class="connect-label">Password</label>
+                <input type="password" id="connPassInput" class="modal-input" placeholder="••••••••" autocomplete="new-password" />
+              </div>
+              <div class="connect-form-group span-2">
+                <label class="radio-label">
+                  <input type="checkbox" id="connSslCheck" />
+                  <span>Require SSL (TLS connection)</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div id="connUriPanel" class="connect-panel hidden">
+            <div class="connect-form-group">
+              <label class="connect-label">PostgreSQL URI</label>
+              <input type="text" id="connUriInput" class="modal-input" placeholder="postgresql://user:password@host:5432/database" />
+              <p class="field-help">Supports standard postgresql:// connection strings including SSL parameters.</p>
+            </div>
+          </div>
+
+          <!-- Connection Test Feedback Area -->
+          <div id="connTestFeedback" class="conn-test-box hidden"></div>
+
+          <!-- Active Connection Profiles -->
+          <div class="active-conns-sec">
+            <h4 class="backup-sec-title">Active Connections</h4>
+            <div id="activeConnsList" class="active-conns-list">
+              <div class="active-conn-empty">No external databases currently connected.</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="modal-btn modal-btn-secondary" id="testConnectionBtn">
+            <span>Test Connection</span>
+          </button>
+          <button type="button" class="modal-btn modal-btn-secondary" id="connectDbCancelBtn">Cancel</button>
+          <button type="button" class="modal-btn modal-btn-primary" id="executeConnectBtn">
+            <span>Connect &amp; Open Workspace</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="workspace-toast hidden" id="workspaceToast" role="status" aria-live="polite"></div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/customization.js"></script>
+  <script src="/js/grid.js"></script>
+  <script src="/js/results.js"></script>
+  <script src="/js/editor.js"></script>
+  <script src="/js/playground.js"></script>
+  <script src="/js/explorer.js"></script>
+  <script src="/js/importExport.js"></script>
+  <script src="/js/backupRestore.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
