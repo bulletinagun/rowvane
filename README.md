@@ -1,6 +1,5 @@
 # Rowvane
 
-> **Project Title:** SQL to Excel Drag n Drop  
 > **Course:** 2nd Year B.Tech CSE — Database Management Systems (DBMS)
 
 Rowvane is a web-based database workspace for PostgreSQL built with vanilla JavaScript, modern CSS, and Node.js/Express. It combines spreadsheet-style table viewing and inline editing with a multi-statement SQL query runner, schema structure explorer, and CSV import/export.
